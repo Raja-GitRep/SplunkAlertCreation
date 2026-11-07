@@ -41,6 +41,9 @@ class ResponseHelperTests(unittest.TestCase):
         )
         self.assertEqual(extract_splunk_error(response), "An object with name=x already exists")
 
+    def test_extract_error_handles_null_messages(self):
+        self.assertEqual(extract_splunk_error(make_response(500, {"messages": None}, text="boom")), "boom")
+
     def test_extract_error_falls_back_to_text(self):
         self.assertEqual(extract_splunk_error(make_response(500, text=" boom ")), "boom")
 
