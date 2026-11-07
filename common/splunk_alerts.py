@@ -35,7 +35,9 @@ def parse_json_response(response):
 def extract_splunk_error(response):
     data = parse_json_response(response)
     if isinstance(data, dict):
-        messages = [m.get("text") for m in data.get("messages", []) if m.get("text")]
+        messages = [
+            m.get("text") for m in data.get("messages") or [] if isinstance(m, dict) and m.get("text")
+        ]
         if messages:
             return "; ".join(messages)
     return response.text.strip() or response.reason or "Unknown error"
