@@ -16,6 +16,11 @@ from common.splunk_alerts import (
 )
 
 
+def response_payload(response):
+    data = parse_json_response(response)
+    return data if data is not None else {"raw_response": response.text}
+
+
 def main():
     st.set_page_config(page_title="Splunk Alert Creator", page_icon=":rotating_light:")
     st.title("Splunk Alert Creator")
@@ -85,15 +90,15 @@ def main():
                     if acl_response.status_code in (200, 201):
                         st.success("Alert created and ACL updated successfully.")
                         st.json({
-                            "alert": parse_json_response(response) or response.text,
-                            "acl": parse_json_response(acl_response) or acl_response.text,
+                            "alert": response_payload(response),
+                            "acl": response_payload(acl_response),
                         })
                     else:
                         st.warning(
                             f"Alert created, but ACL update failed. HTTP {acl_response.status_code}: "
                             f"{extract_splunk_error(acl_response)}"
                         )
-                        st.json(parse_json_response(response) or response.text)
+                        st.json(response_payload(response))
                 elif response.status_code == 409:
                     st.error(f"An alert named '{alert_name}' already exists in app '{app_name}'. Choose a different name.")
                 elif response.status_code == 401:
