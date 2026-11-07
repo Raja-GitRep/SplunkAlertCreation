@@ -3,12 +3,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import requests
 import streamlit as st
 from common.splunk_alerts import (
     COMPARATOR_OPTIONS,
     DEFAULT_MANAGEMENT_PORT,
     DEFAULT_SCHEDULE,
     create_splunk_alert,
+    extract_splunk_error,
+    parse_json_response,
     set_splunk_alert_acl,
 )
 
@@ -45,7 +48,7 @@ def main():
         st.caption("Default schedule runs every 5 minutes. Use cron syntax like '*/10 * * * *'.")
 
     if st.button("Create Splunk Alert"):
-        if not all([host, port, username, password, alert_name, query, email_to]):
+        if not all(field.strip() for field in [host, port, username, password, app_name, alert_name, query, email_to, schedule]):
             st.error("Please complete all required fields before creating the alert.")
             return
 
@@ -82,17 +85,22 @@ def main():
                     if acl_response.status_code in (200, 201):
                         st.success("Alert created and ACL updated successfully.")
                         st.json({
-                            "alert": response.json(),
-                            "acl": acl_response.json(),
+                            "alert": parse_json_response(response) or response.text,
+                            "acl": parse_json_response(acl_response) or acl_response.text,
                         })
                     else:
                         st.warning(
-                            f"Alert created, but ACL update failed. HTTP {acl_response.status_code}: {acl_response.text}"
+                            f"Alert created, but ACL update failed. HTTP {acl_response.status_code}: "
+                            f"{extract_splunk_error(acl_response)}"
                         )
-                        st.json(response.json())
+                        st.json(parse_json_response(response) or response.text)
+                elif response.status_code == 409:
+                    st.error(f"An alert named '{alert_name}' already exists in app '{app_name}'. Choose a different name.")
+                elif response.status_code == 401:
+                    st.error("Authentication failed. Check the Splunk username and password.")
                 else:
                     st.error(
-                        f"Failed to create alert. HTTP {response.status_code}: {response.text}"
+                        f"Failed to create alert. HTTP {response.status_code}: {extract_splunk_error(response)}"
                     )
             except requests.exceptions.RequestException as exc:
                 st.error(f"Connection error: {exc}")

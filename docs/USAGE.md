@@ -62,3 +62,11 @@ Both apps import reusable logic from `common/`:
 
 - Keep the `common/` package sibling to both apps so imports work correctly.
 - If you run inside a virtual environment, activate it before launching the apps.
+
+## Running Tests
+
+From the repository root:
+
+```bash
+python -m unittest discover -s tests -t .
+```
