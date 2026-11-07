@@ -25,6 +25,22 @@ def normalize_search_query(query: str) -> str:
     return raw_query
 
 
+def parse_json_response(response):
+    try:
+        return response.json()
+    except ValueError:
+        return None
+
+
+def extract_splunk_error(response):
+    data = parse_json_response(response)
+    if isinstance(data, dict):
+        messages = [m.get("text") for m in data.get("messages", []) if m.get("text")]
+        if messages:
+            return "; ".join(messages)
+    return response.text.strip() or response.reason or "Unknown error"
+
+
 def create_splunk_alert(
     host,
     port,
