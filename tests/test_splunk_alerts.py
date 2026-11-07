@@ -85,6 +85,7 @@ class SplunkRequestTests(unittest.TestCase):
         payload = mock_post.call_args[1]["data"]
         self.assertEqual(payload["sharing"], "app")
         self.assertEqual(payload["owner"], "nobody")
+        self.assertEqual(payload["perms.read"], "*")
 
 
 if __name__ == "__main__":

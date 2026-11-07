@@ -95,7 +95,7 @@ def set_splunk_alert_acl(host, port, username, password, app_name, alert_name):
     payload = {
         "owner": DEFAULT_OWNER,
         "sharing": "app",
-        "perms.read": "everyone",
+        "perms.read": "*",
         "perms.write": "power",
     }
     response = requests.post(
