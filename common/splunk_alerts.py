@@ -93,6 +93,7 @@ def set_splunk_alert_acl(host, port, username, password, app_name, alert_name):
     encoded_name = quote(alert_name, safe="")
     url = f"https://{host}:{port}/servicesNS/{DEFAULT_OWNER}/{app_name}/saved/searches/{encoded_name}/acl"
     payload = {
+        "owner": DEFAULT_OWNER,
         "sharing": "app",
         "perms.read": "everyone",
         "perms.write": "power",

@@ -82,7 +82,9 @@ class SplunkRequestTests(unittest.TestCase):
         set_splunk_alert_acl("localhost", "8089", "admin", "secret", "search", "My Alert/1")
         url = mock_post.call_args[0][0]
         self.assertEqual(url, "https://localhost:8089/servicesNS/nobody/search/saved/searches/My%20Alert%2F1/acl")
-        self.assertEqual(mock_post.call_args[1]["data"]["sharing"], "app")
+        payload = mock_post.call_args[1]["data"]
+        self.assertEqual(payload["sharing"], "app")
+        self.assertEqual(payload["owner"], "nobody")
 
 
 if __name__ == "__main__":
